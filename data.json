@@ -1,0 +1,24 @@
+[
+  {
+    "position": 0,
+    "title": "Product Management",
+    "start": {
+      "percent": 0,
+      "dependent": "self"
+    },
+    "end": {
+      "month": 14
+    }
+  },
+  {
+    "position": 1,
+    "title": "Tech",
+    "start": {
+      "percent": 20,
+      "dependent": 0
+    },
+    "end": {
+      "month": 10
+    }
+  }
+]
