@@ -20,5 +20,27 @@
     "end": {
       "month": 10
     }
+  },
+  {
+    "position": 2,
+    "title": "Business Capabilities",
+    "start": {
+      "percent": 10,
+      "dependent": 1
+    },
+    "end": {
+      "month": 13
+    }
+  },{
+    "position": 3,
+    "title": "Tech",
+    "start": {
+      "percent": 20,
+      "dependent": 0
+    },
+    "end": {
+      "month": 10
+    }
   }
+
 ]

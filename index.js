@@ -1,5 +1,5 @@
 let svg = d3.select("svg");
-let totalMonths = 14;
+// let totalMonths = 14;
 
 let margin = 200;
 let width = svg.attr("width") - margin;
@@ -11,7 +11,6 @@ let xAxis = d3.axisTop(xScale);
 
 g.append("g")
   .attr("class", "xAxis")
-  .attr("transform", "translate (0, " + margin + ")")
   .call(d3.axisTop(xScale));
 
 const getScalePoints = (g) => {
@@ -23,19 +22,31 @@ const getScalePoints = (g) => {
 
 let points = getScalePoints(g);
 
-const getX = (startPoints) => {
-  
+const getStartingPoint = (startPoint, existingPoints) => {
+  let percent = startPoint["percent"];
+  let dependent = startPoint["dependent"];
+  if (dependent === "self") {
+    return points[0];
+  }
+  let dependentPoint = existingPoints[dependent];
+  return parseFloat(dependentPoint["x"]) + parseFloat(dependentPoint["width"]*percent/100);
+}
+
+const getTimePeriod = (d, startPosition) => {
+  let month = points[d["end"]["month"]-1];
+  return parseFloat(month)-parseFloat(startPosition);
 }
 
 d3.json("data.json", (data) => {
   let y = 50;
-
+  let existingPoints = {};
+  
   data.map((d, i) => {
     
-    let x = points[i];
-    let width = points[d["end"]["month"]-1];
+    let x = getStartingPoint(d["start"], existingPoints);
+    let width = getTimePeriod(d, x);
+    existingPoints[i] = {width: width, x: x};
 
-    getX(d["start"])
     g.append("rect")
       .attr("class", "bar")
       .attr("x", x)
