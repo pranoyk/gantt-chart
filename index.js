@@ -48,7 +48,7 @@ d3.json("data.json", (data) => {
     existingPoints[i] = {width: width, x: x};
 
     g.append("rect")
-      .attr("class", "bar")
+      .attr("class", d["title"])
       .attr("x", x)
       .attr("y", y)
       .attr("width", width)

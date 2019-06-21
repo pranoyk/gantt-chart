@@ -2,6 +2,14 @@ svg {
   border: 0.1em solid black;
 }
 
-.bar {
-  fill: steelblue;
+.productManagement {
+  fill: crimson
+}
+
+.tech {
+  fill: steelblue
+}
+
+.businessCapabilities {
+  fill: green
 }
