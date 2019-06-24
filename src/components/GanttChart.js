@@ -3,76 +3,82 @@ import * as d3 from "d3";
 import jsonData from './data.json';
 import '../index.css'
 
-
 class GanttChart extends React.Component {
-    componentDidMount() {
-        this.drawChart();
+    getDimensions(attr, svg) {
+        return svg.attr(attr) - 200;
+    }
+
+    getStartingPoint (startPoint, existingPoints, points) {
+        let percent = startPoint["percent"];
+        let dependent = startPoint["dependent"];
+        if (dependent === "self") {
+            return points[0];
+        }
+        let dependentPoint = existingPoints[dependent];
+        return parseFloat(dependentPoint["x"]) + parseFloat(dependentPoint["width"]*percent/100);
+    };
+
+    getTimePeriod (d, startPosition, points) {
+        let month = points[d["end"]["month"]-1];
+        return parseFloat(month)-parseFloat(startPosition);
+    };
+
+    getScalePoints(g) {
+        return g.selectAll(".tick")
+            .nodes()
+            .map(d => d.attributes.transform)
+            .map(d => d.value.split(",")[0].slice(10, 100))
+    };
+
+    getXScale(width, iterations) {
+        return d3.scaleBand().range([0, width]).domain(iterations);
+    }
+
+    addBar(g, data, startingPoint, y, width) {
+        return g.append("rect")
+                .attr("class", data["title"])
+                .attr("x", startingPoint)
+                .attr("y", y)
+                .attr("width", width)
+                .attr("height", 50);
+    }
+
+    addXScale(svg, xScale){
+        return svg.append("g")
+            .attr("transform", "translate (" + 100 + "," + 100 + ")")
+            .attr("class", "xAxis")
+            .call(d3.axisTop(xScale));
     }
 
     drawChart() {
         let svg = d3.select("svg");
+        const width = this.getDimensions("width", svg);
+        let xScale = this.getXScale(width, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
 
-        let margin = 200;
-        let width = svg.attr("width") - margin;
-        let height = svg.attr("height") - margin;
+        let g = this.addXScale(svg, xScale);
+        const points = this.getScalePoints(g);
 
-        let xScale = d3.scaleBand().range([0, width]).domain([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
-        let g = svg.append("g").attr("transform", "translate (" + 100 + "," + 100 + ")");
-        let xAxis = d3.axisTop(xScale);
-
-        g.append("g")
-            .attr("class", "xAxis")
-            .call(d3.axisTop(xScale));
-
-        const getScalePoints = (g) => {
-            return g.selectAll(".tick")
-                .nodes()
-                .map(d => d.attributes.transform)
-                .map(d => d.value.split(",")[0].slice(10, 100))
-        };
-
-        let points = getScalePoints(g);
-
-        const getStartingPoint = (startPoint, existingPoints) => {
-            let percent = startPoint["percent"];
-            let dependent = startPoint["dependent"];
-            if (dependent === "self") {
-                return points[0];
-            }
-            let dependentPoint = existingPoints[dependent];
-            return parseFloat(dependentPoint["x"]) + parseFloat(dependentPoint["width"]*percent/100);
-        };
-
-        const getTimePeriod = (d, startPosition) => {
-            let month = points[d["end"]["month"]-1];
-            return parseFloat(month)-parseFloat(startPosition);
-        };
-
-        let array = [];
         let existingPoints = {};
-
-        array = jsonData;
         let y = 50;
 
-        array.map((d, i) => {
-            let x = getStartingPoint(d["start"], existingPoints);
-            let width = getTimePeriod(d, x);
-            existingPoints[i] = {width : width, x: x};
+        jsonData.map((data, i) => {
+            let startingPoint = this.getStartingPoint(data["start"], existingPoints, points);
+            let width = this.getTimePeriod(data, startingPoint, points);
 
-            g.append("rect")
-                .attr("class", d["title"])
-                .attr("x", x)
-                .attr("y", y)
-                .attr("width", width)
-                .attr("height", 50);
-
+            existingPoints[i] = {width : width, x: startingPoint};
+            this.addBar(g, data, startingPoint, y, width);
             y += 60;
         })
     }
+
+
+    componentDidMount() {
+        this.drawChart();
+    }
+
     render() {
         return (
-            <div>
-            </div>
+            <div></div>
         )
     }
 }
