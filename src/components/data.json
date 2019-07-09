@@ -26,7 +26,7 @@
     "title": "businessCapabilities",
     "start": {
       "percent": 10,
-      "dependent": 1
+      "dependent": 0
     },
     "end": {
       "month": 13
@@ -36,10 +36,10 @@
     "title": "tech",
     "start": {
       "percent": 20,
-      "dependent": 0
+      "dependent": 2
     },
     "end": {
-      "month": 10
+      "month": 12
     }
   }
 ]

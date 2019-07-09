@@ -50,6 +50,22 @@ class GanttChart extends React.Component {
             .call(d3.axisTop(xScale));
     }
 
+    addDependentPoint(existingPoints, g) {
+        let dependentBars = jsonData.filter(data => data["start"]["dependent"] != "self");
+        let constant = 80;
+        dependentBars.map(bar => {
+            let barPosition = bar["position"];
+            let cx = existingPoints[barPosition]["x"];
+            let cy = 100 + (constant * bar["start"]["dependent"]);
+            g.append("circle")
+                .attr("cx", cx)
+                .attr("cy", cy)
+                .attr("r", 5)
+                .style("fill", "black");
+        })
+
+    }
+
     drawChart() {
         let svg = d3.select("svg");
         const width = this.getDimensions("width", svg);
@@ -67,8 +83,9 @@ class GanttChart extends React.Component {
 
             existingPoints[i] = {width : width, x: startingPoint};
             this.addBar(g, data, startingPoint, y, width);
-            y += 60;
+            y += 80;
         })
+        this.addDependentPoint(existingPoints, g);
     }
 
 
