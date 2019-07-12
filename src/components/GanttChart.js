@@ -36,11 +36,14 @@ class GanttChart extends React.Component {
 
     addBar(g, data, startingPoint, y, width) {
         return g.append("rect")
-                .attr("class", data["title"])
+                .attr("class", data["category"])
                 .attr("x", startingPoint)
                 .attr("y", y)
                 .attr("width", width)
-                .attr("height", 50);
+                .attr("height", 50)
+                .on("click", () => {
+                    this.addDependentPoint(startingPoint, y, data["position"], g);
+                });
     }
 
     addXScale(svg, xScale){
@@ -50,20 +53,80 @@ class GanttChart extends React.Component {
             .call(d3.axisTop(xScale));
     }
 
-    addDependentPoint(existingPoints, g) {
-        let dependentBars = jsonData.filter(data => data["start"]["dependent"] != "self");
-        let constant = 80;
-        dependentBars.map(bar => {
-            let barPosition = bar["position"];
-            let cx = existingPoints[barPosition]["x"];
-            let cy = 100 + (constant * bar["start"]["dependent"]);
-            g.append("circle")
-                .attr("cx", cx)
-                .attr("cy", cy)
-                .attr("r", 5)
-                .style("fill", "black");
-        })
+    getCoordinates(startPoint, endPoint) {
+        let lineData = [];
+        lineData.push(startPoint);
+        let firstCoordinate = {"x": parseFloat(startPoint["x"]), "y": (parseFloat(startPoint["y"])+10)};
+        let secondCoordinate = {"x": (parseFloat(startPoint["x"])-10), "y": (parseFloat(startPoint["y"])+10)};
+        let thirdCoordinate = {"x": (parseFloat(startPoint["x"])-10), "y": parseFloat(endPoint["y"])};
+        lineData.push(firstCoordinate);
+        lineData.push(secondCoordinate);
+        lineData.push(thirdCoordinate);
+        lineData.push(endPoint);
+        return lineData;
+    }
 
+    drawLines(startPoints, endPoints, g) {
+        startPoints.map((start, index) => {
+            let lineCoordinates =  this.getCoordinates(start, endPoints[index]);
+            let lineFunction = d3.line()
+                .x(d => d["x"])
+                .y(d => d["y"])
+                .curve(d3.curveLinear);
+            g.append("path")
+                .attr("d", lineFunction(lineCoordinates))
+                .attr("stroke", "blue")
+                .attr("stroke-width", 2);
+        })
+    }
+
+    getAllStartCoordinates(g) {
+        let startXCoordinates = g.selectAll(".startIndicators")
+            .nodes()
+            .map(d => d.attributes["cx"]["value"]);
+        let startYCoordinates = g.selectAll(".startIndicators")
+            .nodes()
+            .map(d => d.attributes["cy"]["value"]);
+        let startCoordinates = startXCoordinates.map((x, i) => {
+            return {"x" : x, "y" : startYCoordinates[i]};
+        });
+        return startCoordinates
+    }
+
+    getAllEndCoordinates(g) {
+        let endXCoordinates = g.selectAll(".endIndicators")
+            .nodes()
+            .map(d => d.attributes["cx"]["value"]);
+        let endYCoordinates = g.selectAll(".endIndicators")
+            .nodes()
+            .map(d => d.attributes["cy"]["value"]);
+        let endCoordinates = endXCoordinates.map((x, i) => {
+            return {"x": x, "y": endYCoordinates[i]};
+        });
+        return endCoordinates;
+    }
+
+    addDependentPoint(cx, y, position, g) {
+        let constant = 80;
+        let selectedBar = jsonData.filter(data => data.position === position);
+        if (selectedBar[0]["start"]["dependent"] === "self") return;
+        let cyStart = 100 + (constant * selectedBar[0]["start"]["dependent"]);        
+        g.append("circle")
+            .attr("cx", cx)
+            .attr("cy", cyStart)
+            .attr("r", 5)
+            .attr("class", "startIndicators");
+        let startCoordinates = this.getAllStartCoordinates(g);
+        
+        let cyEnd = y + 25;
+        g.append("circle")
+            .attr("cx", cx)
+            .attr("cy", cyEnd)
+            .attr("r", 5)
+            .attr("class", "endIndicators");
+        let endCoordinates = this.getAllEndCoordinates(g);
+
+        this.drawLines(startCoordinates, endCoordinates, g);
     }
 
     drawChart() {
@@ -85,7 +148,7 @@ class GanttChart extends React.Component {
             this.addBar(g, data, startingPoint, y, width);
             y += 80;
         })
-        this.addDependentPoint(existingPoints, g);
+        // this.addDependentPoint(existingPoints, g);
     }
 
 

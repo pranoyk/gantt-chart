@@ -1,7 +1,7 @@
 [
   {
     "position": 0,
-    "title": "productManagement",
+    "category": "productManagement",
     "start": {
       "percent": 0,
       "dependent": "self"
@@ -12,7 +12,7 @@
   },
   {
     "position": 1,
-    "title": "tech",
+    "category": "tech",
     "start": {
       "percent": 20,
       "dependent": 0
@@ -23,7 +23,7 @@
   },
   {
     "position": 2,
-    "title": "businessCapabilities",
+    "category": "businessCapabilities",
     "start": {
       "percent": 10,
       "dependent": 0
@@ -31,9 +31,10 @@
     "end": {
       "month": 13
     }
-  },{
+  },
+  {
     "position": 3,
-    "title": "tech",
+    "category": "tech",
     "start": {
       "percent": 20,
       "dependent": 2

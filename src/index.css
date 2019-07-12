@@ -13,3 +13,7 @@ svg {
 .businessCapabilities {
   fill: green
 }
+
+.startIndicators, .endIndicators {
+  fill: black;
+}
