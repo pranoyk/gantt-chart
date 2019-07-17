@@ -34,6 +34,10 @@ class GanttChart extends React.Component {
         return d3.scaleBand().range([0, width]).domain(iterations);
     }
 
+    generateClassname(category, position, dependentPosition) {
+        return category + "_" + position + "_" + dependentPosition;
+    }
+
     addBar(g, data, startingPoint, y, width) {
         return g.append("rect")
                 .attr("class", data["category"])
@@ -42,7 +46,13 @@ class GanttChart extends React.Component {
                 .attr("width", width)
                 .attr("height", 50)
                 .on("click", () => {
-                    this.addDependentPoint(startingPoint, y, data["position"], g);
+                    let classname = this.generateClassname(data["category"],data["position"], data["start"]["dependent"]);
+                    if(g.select("."+classname).nodes().length !== 0) {
+                        g.select("."+classname)
+                            .remove();
+                        return;
+                    }
+                    this.addDependentPoint(startingPoint, y, data["position"], g, classname);
                 });
     }
 
@@ -106,18 +116,20 @@ class GanttChart extends React.Component {
         return endCoordinates;
     }
 
-    addDependentPoint(cx, y, position, g) {
+    addDependentPoint(cx, y, position, chart, classname) {
         let constant = 80;
         let selectedBar = jsonData.filter(data => data.position === position);
         if (selectedBar[0]["start"]["dependent"] === "self") return;
-        let cyStart = 100 + (constant * selectedBar[0]["start"]["dependent"]);        
+        let cyStart = 100 + (constant * selectedBar[0]["start"]["dependent"]); 
+        let g = chart.append("g")
+            .attr("class", classname);
         g.append("circle")
             .attr("cx", cx)
             .attr("cy", cyStart)
             .attr("r", 5)
             .attr("class", "startIndicators");
         let startCoordinates = this.getAllStartCoordinates(g);
-        
+
         let cyEnd = y + 25;
         g.append("circle")
             .attr("cx", cx)
@@ -125,21 +137,16 @@ class GanttChart extends React.Component {
             .attr("r", 5)
             .attr("class", "endIndicators");
         let endCoordinates = this.getAllEndCoordinates(g);
-
         this.drawLines(startCoordinates, endCoordinates, g);
     }
 
     drawChart() {
         let svg = d3.select("svg");
-        const width = this.getDimensions("width", svg);
-        let xScale = this.getXScale(width, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
-
+        let xScale = this.getXScale(this.getDimensions("width", svg), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
         let g = this.addXScale(svg, xScale);
         const points = this.getScalePoints(g);
-
         let existingPoints = {};
         let y = 50;
-
         jsonData.map((data, i) => {
             let startingPoint = this.getStartingPoint(data["start"], existingPoints, points);
             let width = this.getTimePeriod(data, startingPoint, points);
@@ -148,7 +155,6 @@ class GanttChart extends React.Component {
             this.addBar(g, data, startingPoint, y, width);
             y += 80;
         })
-        // this.addDependentPoint(existingPoints, g);
     }
 
 
